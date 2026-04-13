@@ -1,0 +1,112 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Upload Documents - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-upload"></i> Upload Documents</h1>
+    <p>Application #{{ application.id }} · Shop {{ application.shop.shop_number }}</p>
+    <div class="page-header-actions">
+        <a href="{% url 'tenant_application_detail' application.id %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div>
+        <!-- Upload Form -->
+        <div class="form-card" style="max-width:100%;">
+            <h3 style="margin-bottom:1rem;">Upload New Document</h3>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="doc-type">Document Type</label>
+                    {{ form.document_type }}
+                </div>
+                <div class="form-group">
+                    <label for="doc-file">Select File</label>
+                    {{ form.file }}
+                    <small class="text-muted">Allowed: PDF, JPG, JPEG, PNG · Max size: 5MB</small>
+                    {% if form.file.errors %}<small class="text-danger">{{ form.file.errors.0 }}</small>{% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Upload Document</button>
+            </form>
+        </div>
+
+        <!-- Required Documents Checklist -->
+        <div class="card mt-2">
+            <div class="card-header"><h3>Required Documents</h3></div>
+            <div style="padding:0.5rem 0;">
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-id-card"></i> ID Proof</span>
+                    <span class="detail-value">
+                        {% for doc in documents %}
+                            {% if doc.document_type == 'id_proof' %}
+                                <span class="badge badge-{{ doc.status|status_badge }}">{{ doc.get_status_display }}</span>
+                            {% endif %}
+                        {% empty %}
+                            <span class="badge badge-secondary">Not uploaded</span>
+                        {% endfor %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Address Proof</span>
+                    <span class="detail-value">
+                        {% for doc in documents %}
+                            {% if doc.document_type == 'address_proof' %}
+                                <span class="badge badge-{{ doc.status|status_badge }}">{{ doc.get_status_display }}</span>
+                            {% endif %}
+                        {% empty %}
+                            <span class="badge badge-secondary">Not uploaded</span>
+                        {% endfor %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label"><i class="fas fa-camera"></i> Passport Photo</span>
+                    <span class="detail-value">
+                        {% for doc in documents %}
+                            {% if doc.document_type == 'photo' %}
+                                <span class="badge badge-{{ doc.status|status_badge }}">{{ doc.get_status_display }}</span>
+                            {% endif %}
+                        {% empty %}
+                            <span class="badge badge-secondary">Not uploaded</span>
+                        {% endfor %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <!-- Uploaded Documents -->
+        <div class="card">
+            <div class="card-header"><h3>Uploaded Documents</h3></div>
+            {% if documents %}
+            <div class="document-list">
+                {% for doc in documents %}
+                <div class="document-item">
+                    <div class="document-icon"><i class="fas {% if doc.mime_type == 'application/pdf' %}fa-file-pdf{% else %}fa-file-image{% endif %}"></i></div>
+                    <div class="document-info">
+                        <div class="document-name">{{ doc.get_document_type_display }}</div>
+                        <div class="document-meta">{{ doc.file_name }}</div>
+                        {% if doc.remarks %}<div class="document-meta" style="color:var(--warning);">{{ doc.remarks }}</div>{% endif %}
+                    </div>
+                    <div class="document-actions">
+                        <span class="badge badge-{{ doc.status|status_badge }}">{{ doc.get_status_display }}</span>
+                        {% if doc.status != 'approved' %}
+                        <form method="post" action="{% url 'tenant_delete_document' doc.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" data-confirm="Delete this document?"><i class="fas fa-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center" style="padding:1rem;">No documents uploaded yet</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

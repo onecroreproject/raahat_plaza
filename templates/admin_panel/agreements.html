@@ -1,0 +1,52 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Agreements - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-file-contract"></i> Agreement Management</h1>
+    <p>View and manage rental agreements</p>
+</div>
+
+{% if agreements %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Rental</th>
+                <th>Tenant</th>
+                <th>Shop</th>
+                <th>Uploaded By</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for agreement in agreements %}
+            <tr>
+                <td>#{{ agreement.id }}</td>
+                <td>Rental #{{ agreement.rental.id }}</td>
+                <td>{{ agreement.rental.tenant.get_full_name }}</td>
+                <td>{{ agreement.rental.shop.shop_number }}</td>
+                <td><span class="badge badge-info">{{ agreement.get_uploaded_by_role_display }}</span></td>
+                <td><span class="badge badge-{{ agreement.status|status_badge }}">{{ agreement.get_status_display }}</span></td>
+                <td>{{ agreement.uploaded_at|date:"d M Y" }}</td>
+                <td>
+                    <a href="{% url 'download_agreement' agreement.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-download"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon"><i class="fas fa-file-contract"></i></div>
+    <h3>No Agreements</h3>
+    <p>Agreements will appear once rentals are confirmed.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,5 @@
+Django>=4.2,<5.0
+razorpay>=1.4.1
+reportlab>=4.0
+python-dotenv>=1.0.0
+Pillow>=10.0

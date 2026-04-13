@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block body %}
+<div class="app-layout">
+    <!-- Mobile Toggle -->
+    <button class="mobile-toggle" id="mobile-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-icon">RP</div>
+            <div>
+                <h2>Raahat Plaza</h2>
+                <span>{{ user.get_role_display }} Panel</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            {% if user.role == 'admin' %}
+                {% include 'includes/sidebar_admin.html' %}
+            {% elif user.role == 'owner' %}
+                {% include 'includes/sidebar_owner.html' %}
+            {% else %}
+                {% include 'includes/sidebar_tenant.html' %}
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar">
+                    {{ user.first_name|first|default:user.username|first|upper }}
+                </div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="sidebar-user-role">{{ user.get_role_display }}</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content fade-in">
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'base_public.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Raahat Plaza - Premium Mall Rental Management{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Welcome to<br>Raahat Plaza</h1>
+        <p>Discover premium retail spaces across 5 floors. From boutique shops to spacious showrooms — find the perfect space for your business at Raahat Plaza.</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <a href="{% url 'rental_listing' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-search"></i> Browse Available Shops
+            </a>
+            {% if not user.is_authenticated %}
+                <a href="{% url 'register' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-user-plus"></i> Register Now
+                </a>
+            {% endif %}
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <h3 data-count="{{ floors.count }}">{{ floors.count }}</h3>
+                <p>Floors</p>
+            </div>
+            <div class="hero-stat">
+                <h3 data-count="{{ total_shops }}">{{ total_shops }}</h3>
+                <p>Total Shops</p>
+            </div>
+            <div class="hero-stat">
+                <h3 data-count="{{ available_count }}">{{ available_count }}</h3>
+                <p>Available Now</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Floors Section -->
+{% if floors %}
+<section style="max-width:1200px;margin:0 auto 4rem;padding:0 2rem;">
+    <div style="text-align:center;margin-bottom:2.5rem;">
+        <h2 style="margin-bottom:0.5rem;">Our Floors</h2>
+        <p style="color:var(--text-muted);">Explore retail spaces across all levels of Raahat Plaza</p>
+    </div>
+    <div class="stats-grid">
+        {% for floor in floors %}
+        <div class="stat-card">
+            <div class="stat-icon {% cycle 'purple' 'green' 'teal' 'orange' 'blue' %}">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <div class="stat-info">
+                <h4>{{ floor.floor_name }}</h4>
+                <p>{{ floor.total_shops }} shops · {{ floor.vacant_shops }} available</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Available Shops Preview -->
+{% if available_shops %}
+<section style="max-width:1200px;margin:0 auto 4rem;padding:0 2rem;">
+    <div style="text-align:center;margin-bottom:2.5rem;">
+        <h2 style="margin-bottom:0.5rem;">Featured Available Shops</h2>
+        <p style="color:var(--text-muted);">Premium retail spaces ready for your business</p>
+    </div>
+    <div class="shop-grid">
+        {% for shop in available_shops|slice:":6" %}
+        <div class="shop-card">
+            <div class="shop-card-image">
+                {% if shop.image %}
+                    <img src="{{ shop.image.url }}" alt="Shop {{ shop.shop_number }}">
+                {% else %}
+                    <i class="fas fa-store"></i>
+                {% endif %}
+                <div class="shop-card-badge">
+                    <span class="badge badge-success">Available</span>
+                </div>
+            </div>
+            <div class="shop-card-body">
+                <h4>Shop {{ shop.shop_number }}</h4>
+                <div class="shop-card-floor"><i class="fas fa-layer-group"></i> {{ shop.floor.floor_name }}</div>
+                <div class="shop-card-details">
+                    <div class="shop-detail-item">
+                        <span class="label">Size</span>
+                        <span class="value">{{ shop.size }}</span>
+                    </div>
+                    <div class="shop-detail-item">
+                        <span class="label">Monthly Rent</span>
+                        <span class="value">₹{{ shop.monthly_rent|floatformat:0 }}</span>
+                    </div>
+                    <div class="shop-detail-item">
+                        <span class="label">Deposit</span>
+                        <span class="value">₹{{ shop.deposit_amount|floatformat:0 }}</span>
+                    </div>
+                    <div class="shop-detail-item">
+                        <span class="label">Maintenance</span>
+                        <span class="value">₹{{ shop.maintenance_charge|floatformat:0 }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="shop-card-footer">
+                <a href="{% url 'shop_detail_public' shop.pk %}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-eye"></i> View Details
+                </a>
+                {% if user.is_authenticated and user.role == 'tenant' %}
+                    <a href="{% url 'apply_for_rent' shop.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-paper-plane"></i> Apply
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if available_shops.count > 6 %}
+    <div style="text-align:center;margin-top:2rem;">
+        <a href="{% url 'rental_listing' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-th"></i> View All Available Shops
+        </a>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
+
+<!-- Footer -->
+<footer style="text-align:center;padding:2rem;border-top:1px solid var(--border);color:var(--text-muted);font-size:0.85rem;">
+    <p style="margin-bottom:0.5rem;">© 2024 Raahat Plaza. All rights reserved.</p>
+    <p style="margin-bottom:0;">Mall Rental Management System</p>
+</footer>
+{% endblock %}

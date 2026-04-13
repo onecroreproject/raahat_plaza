@@ -1,0 +1,57 @@
+<!-- Owner Sidebar Navigation -->
+<div class="nav-section">
+    <div class="nav-section-title">Dashboard</div>
+    <a href="{% url 'dashboard' %}" class="nav-link">
+        <span class="icon"><i class="fas fa-tachometer-alt"></i></span>
+        Dashboard
+    </a>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Shop Management</div>
+    <a href="{% url 'owner_shops' %}" class="nav-link">
+        <span class="icon"><i class="fas fa-store"></i></span>
+        My Shops
+    </a>
+    <a href="{% url 'owner_applications' %}" class="nav-link">
+        <span class="icon"><i class="fas fa-file-alt"></i></span>
+        Applications
+    </a>
+    <a href="{% url 'owner_rentals' %}" class="nav-link">
+        <span class="icon"><i class="fas fa-handshake"></i></span>
+        Rentals
+    </a>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Finance</div>
+    <a href="{% url 'owner_payments' %}" class="nav-link">
+        <span class="icon"><i class="fas fa-credit-card"></i></span>
+        Payments
+    </a>
+    <a href="{% url 'owner_invoices' %}" class="nav-link">
+        <span class="icon"><i class="fas fa-file-invoice"></i></span>
+        Invoices
+    </a>
+    <a href="{% url 'owner_agreements' %}" class="nav-link">
+        <span class="icon"><i class="fas fa-file-contract"></i></span>
+        Agreements
+    </a>
+</div>
+
+<div class="nav-section">
+    <div class="nav-section-title">Account</div>
+    <a href="{% url 'profile' %}" class="nav-link">
+        <span class="icon"><i class="fas fa-user-cog"></i></span>
+        Profile
+    </a>
+    <a href="{% url 'notifications' %}" class="nav-link">
+        <span class="icon"><i class="fas fa-bell"></i></span>
+        Notifications
+        {% if unread_notifications %}<span class="badge-count">{{ unread_notifications }}</span>{% endif %}
+    </a>
+    <a href="{% url 'logout' %}" class="nav-link">
+        <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+        Logout
+    </a>
+</div>

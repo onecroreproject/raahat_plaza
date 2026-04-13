@@ -1,0 +1,89 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Rental Details - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-handshake"></i> Rental #{{ rental.id }}</h1>
+    <p>Shop {{ rental.shop.shop_number }} · {{ rental.shop.floor.floor_name }}</p>
+    <div class="page-header-actions">
+        <a href="{% url 'tenant_rentals' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+        {% if rental.is_active %}
+        <a href="{% url 'pay_monthly_rent' rental.pk %}" class="btn btn-success btn-sm"><i class="fas fa-rupee-sign"></i> Pay Monthly Rent</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <h3>Rental Information</h3>
+                <span class="badge badge-{{ rental.status|status_badge }}">{{ rental.get_status_display }}</span>
+            </div>
+            <div class="detail-item"><span class="detail-label">Shop</span><span class="detail-value">{{ rental.shop.shop_number }}</span></div>
+            <div class="detail-item"><span class="detail-label">Floor</span><span class="detail-value">{{ rental.shop.floor.floor_name }}</span></div>
+            <div class="detail-item"><span class="detail-label">Size</span><span class="detail-value">{{ rental.shop.size }}</span></div>
+            <div class="detail-item"><span class="detail-label">Monthly Rent</span><span class="detail-value" style="color:var(--success);">₹{{ rental.rent_amount|floatformat:2 }}</span></div>
+            <div class="detail-item"><span class="detail-label">Deposit Paid</span><span class="detail-value">₹{{ rental.deposit_amount|floatformat:2 }}</span></div>
+            <div class="detail-item"><span class="detail-label">Maintenance</span><span class="detail-value">₹{{ rental.maintenance_amount|floatformat:2 }}</span></div>
+            <div class="detail-item"><span class="detail-label">Start Date</span><span class="detail-value">{{ rental.start_date|date:"d M Y" }}</span></div>
+            <div class="detail-item"><span class="detail-label">End Date</span><span class="detail-value">{{ rental.end_date|date:"d M Y" }}</span></div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="card mt-2">
+            <div class="card-header"><h3>Payment History</h3></div>
+            {% for payment in payments %}
+            <div class="detail-item">
+                <div>
+                    <strong style="color:var(--success);">₹{{ payment.amount|floatformat:0 }}</strong>
+                    <br><small class="text-muted">{{ payment.get_payment_type_display }}</small>
+                </div>
+                <div style="text-align:right;">
+                    <span class="badge badge-{{ payment.status|status_badge }}">{{ payment.get_status_display }}</span>
+                    <br><small class="text-muted">{{ payment.paid_at|date:"d M Y"|default:"-" }}</small>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center" style="padding:1rem;">No payments</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div>
+        <!-- Agreements -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Agreements</h3>
+                <a href="{% url 'tenant_upload_agreement' rental.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-upload"></i> Upload</a>
+            </div>
+            {% for ag in agreements %}
+            <div class="document-item">
+                <div class="document-icon"><i class="fas fa-file-contract"></i></div>
+                <div class="document-info">
+                    <div class="document-name">{{ ag.file_name|default:"Agreement" }}</div>
+                    <div class="document-meta">{{ ag.get_uploaded_by_role_display }} · {{ ag.uploaded_at|date:"d M Y" }}</div>
+                </div>
+                <a href="{% url 'download_agreement' ag.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-download"></i></a>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center" style="padding:1rem;">No agreements uploaded</p>
+            {% endfor %}
+        </div>
+
+        {% if rental.is_active %}
+        <div class="card mt-2">
+            <div class="card-header"><h3>Monthly Rent</h3></div>
+            <div class="payment-item"><span>Rent</span><span>₹{{ rental.rent_amount|floatformat:0 }}</span></div>
+            <div class="payment-item"><span>Maintenance</span><span>₹{{ rental.maintenance_amount|floatformat:0 }}</span></div>
+            <div class="payment-total"><span>Monthly Total</span><span>₹{{ rental.total_monthly|floatformat:0 }}</span></div>
+            <a href="{% url 'pay_monthly_rent' rental.pk %}" class="btn btn-success w-full mt-2" style="justify-content:center;">
+                <i class="fas fa-rupee-sign"></i> Pay Monthly Rent
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

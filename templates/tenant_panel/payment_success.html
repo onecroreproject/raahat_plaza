@@ -1,0 +1,40 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Payment Successful - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="success-page">
+    <div class="success-icon"><i class="fas fa-check"></i></div>
+    <h2 style="margin-bottom:0.5rem;">Payment Successful!</h2>
+    <p style="color:var(--text-secondary);margin-bottom:2rem;">Your payment has been verified and your rental is now active.</p>
+
+    {% if rental %}
+    <div class="card" style="text-align:left;margin-bottom:1.5rem;">
+        <div class="card-header"><h3>Rental Details</h3></div>
+        <div class="detail-item"><span class="detail-label">Shop</span><span class="detail-value">{{ rental.shop.shop_number }}</span></div>
+        <div class="detail-item"><span class="detail-label">Floor</span><span class="detail-value">{{ rental.shop.floor.floor_name }}</span></div>
+        <div class="detail-item"><span class="detail-label">Start Date</span><span class="detail-value">{{ rental.start_date|date:"d M Y" }}</span></div>
+        <div class="detail-item"><span class="detail-label">End Date</span><span class="detail-value">{{ rental.end_date|date:"d M Y" }}</span></div>
+        <div class="detail-item"><span class="detail-label">Monthly Rent</span><span class="detail-value">₹{{ rental.rent_amount|floatformat:0 }}</span></div>
+    </div>
+    {% endif %}
+
+    {% if invoice %}
+    <div class="card" style="text-align:left;margin-bottom:1.5rem;">
+        <div class="card-header"><h3>Invoice</h3></div>
+        <div class="detail-item"><span class="detail-label">Invoice #</span><span class="detail-value">{{ invoice.invoice_number }}</span></div>
+        <div class="detail-item"><span class="detail-label">Amount</span><span class="detail-value" style="color:var(--success);">₹{{ invoice.total_amount|floatformat:0 }}</span></div>
+        {% if invoice.pdf_path %}
+        <div style="margin-top:1rem;">
+            <a href="{% url 'download_invoice' invoice.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Download Invoice PDF</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="btn-group" style="justify-content:center;">
+        <a href="{% url 'dashboard' %}" class="btn btn-primary"><i class="fas fa-home"></i> Go to Dashboard</a>
+        <a href="{% url 'tenant_rentals' %}" class="btn btn-secondary"><i class="fas fa-handshake"></i> My Rentals</a>
+    </div>
+</div>
+{% endblock %}

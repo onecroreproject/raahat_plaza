@@ -1,0 +1,30 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Monthly Rent Payment - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-rupee-sign"></i> Monthly Rent Payment</h1>
+    <p>Shop {{ shop.shop_number }} · {{ shop.floor.floor_name }}</p>
+</div>
+
+<div style="max-width:500px;margin:0 auto;">
+    <div class="payment-summary">
+        <h3 style="margin-bottom:1.5rem;text-align:center;">Monthly Payment</h3>
+        <div class="payment-item"><span>Monthly Rent</span><span>₹{{ rent|floatformat:0 }}</span></div>
+        <div class="payment-item"><span>Maintenance</span><span>₹{{ maintenance|floatformat:0 }}</span></div>
+        <div class="payment-total"><span>Total</span><span>₹{{ total|floatformat:0 }}</span></div>
+
+        <form method="post" style="margin-top:2rem;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-lg w-full" style="justify-content:center;">
+                <i class="fas fa-lock"></i> Pay Monthly Rent
+            </button>
+        </form>
+        <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:0.75rem;">
+            <i class="fas fa-shield-alt"></i> Secured by Razorpay
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Rentals - Owner Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-handshake"></i> My Rentals</h1>
+    <p>View all active and past rentals for your shops</p>
+</div>
+
+{% if rentals %}
+<div class="table-container">
+    <table>
+        <thead><tr><th>ID</th><th>Shop</th><th>Tenant</th><th>Rent</th><th>Start</th><th>End</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for r in rentals %}
+            <tr>
+                <td>#{{ r.id }}</td>
+                <td>{{ r.shop.shop_number }}</td>
+                <td>{{ r.tenant.get_full_name }}</td>
+                <td>₹{{ r.rent_amount|floatformat:0 }}/mo</td>
+                <td>{{ r.start_date|date:"d M Y" }}</td>
+                <td>{{ r.end_date|date:"d M Y" }}</td>
+                <td><span class="badge badge-{{ r.status|status_badge }}">{{ r.get_status_display }}</span></td>
+                <td><a href="{% url 'owner_upload_agreement' r.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-file-contract"></i></a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state"><div class="icon"><i class="fas fa-handshake"></i></div><h3>No Rentals</h3><p>No active rentals for your shops.</p></div>
+{% endif %}
+{% endblock %}

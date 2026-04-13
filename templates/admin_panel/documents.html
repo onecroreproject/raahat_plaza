@@ -1,0 +1,69 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Documents - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-folder-open"></i> Document Management</h1>
+    <p>Review and verify uploaded documents</p>
+</div>
+
+<form method="get" class="filter-bar">
+    <div>
+        <label>Status:</label>
+        <select name="status" class="form-input" onchange="this.form.submit()">
+            <option value="">All Status</option>
+            <option value="pending_review" {% if selected_status == 'pending_review' %}selected{% endif %}>Pending Review</option>
+            <option value="approved" {% if selected_status == 'approved' %}selected{% endif %}>Approved</option>
+            <option value="rejected" {% if selected_status == 'rejected' %}selected{% endif %}>Rejected</option>
+            <option value="reupload_required" {% if selected_status == 'reupload_required' %}selected{% endif %}>Re-upload Required</option>
+        </select>
+    </div>
+    <a href="{% url 'admin_documents' %}" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i> Clear</a>
+</form>
+
+{% if documents %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Type</th>
+                <th>File</th>
+                <th>Size</th>
+                <th>Status</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents %}
+            <tr>
+                <td>#{{ doc.id }}</td>
+                <td>{{ doc.user.get_full_name }}</td>
+                <td>{{ doc.get_document_type_display }}</td>
+                <td>{{ doc.file_name|truncatechars:25 }}</td>
+                <td>{{ doc.file_size|filesizeformat }}</td>
+                <td><span class="badge badge-{{ doc.status|status_badge }}">{{ doc.get_status_display }}</span></td>
+                <td>{{ doc.uploaded_at|date:"d M Y" }}</td>
+                <td>
+                    <div class="btn-group">
+                        <a href="{{ doc.file.url }}" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-download"></i></a>
+                        <a href="{% url 'admin_review_document' doc.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-check-circle"></i> Review</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon"><i class="fas fa-folder-open"></i></div>
+    <h3>No Documents</h3>
+    <p>No documents match your criteria.</p>
+</div>
+{% endif %}
+{% endblock %}

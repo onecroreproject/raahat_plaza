@@ -1,0 +1,96 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Manage Shops - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-store"></i> Manage Shops</h1>
+    <p>Create, edit, and manage all shops across Raahat Plaza</p>
+    <div class="page-header-actions">
+        <a href="{% url 'add_shop' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Shop</a>
+    </div>
+</div>
+
+<!-- Filters -->
+<form method="get" class="filter-bar">
+    <div>
+        <label>Floor:</label>
+        <select name="floor" class="form-input" onchange="this.form.submit()">
+            <option value="">All Floors</option>
+            {% for floor in floors %}
+                <option value="{{ floor.id }}" {% if selected_floor == floor.id|stringformat:"d" %}selected{% endif %}>{{ floor.floor_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label>Status:</label>
+        <select name="status" class="form-input" onchange="this.form.submit()">
+            <option value="">All Status</option>
+            <option value="vacant" {% if selected_status == 'vacant' %}selected{% endif %}>Vacant</option>
+            <option value="applied" {% if selected_status == 'applied' %}selected{% endif %}>Applied</option>
+            <option value="occupied" {% if selected_status == 'occupied' %}selected{% endif %}>Occupied</option>
+        </select>
+    </div>
+    <div>
+        <label>Ownership:</label>
+        <select name="ownership" class="form-input" onchange="this.form.submit()">
+            <option value="">All</option>
+            <option value="admin" {% if selected_ownership == 'admin' %}selected{% endif %}>Admin Owned</option>
+            <option value="owner" {% if selected_ownership == 'owner' %}selected{% endif %}>Owner Owned</option>
+        </select>
+    </div>
+    <a href="{% url 'manage_shops' %}" class="btn btn-secondary btn-sm"><i class="fas fa-times"></i> Clear</a>
+</form>
+
+{% if shops %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Shop #</th>
+                <th>Floor</th>
+                <th>Size</th>
+                <th>Rent</th>
+                <th>Ownership</th>
+                <th>Owner</th>
+                <th>Status</th>
+                <th>Listing</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for shop in shops %}
+            <tr>
+                <td><strong>{{ shop.shop_number }}</strong></td>
+                <td>{{ shop.floor.floor_name }}</td>
+                <td>{{ shop.size }}</td>
+                <td>₹{{ shop.monthly_rent|floatformat:0 }}</td>
+                <td><span class="badge badge-{% if shop.ownership_type == 'admin' %}primary{% else %}info{% endif %}">{{ shop.get_ownership_type_display }}</span></td>
+                <td>{{ shop.owner.get_full_name|default:"-" }}</td>
+                <td><span class="badge badge-{{ shop.rental_status|status_badge }}">{{ shop.get_rental_status_display }}</span></td>
+                <td><span class="badge badge-{{ shop.listing_type|status_badge }}">{{ shop.get_listing_type_display }}</span></td>
+                <td>
+                    <div class="btn-group">
+                        <a href="{% url 'shop_detail_admin' shop.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-eye"></i></a>
+                        <a href="{% url 'edit_shop' shop.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
+                        <form method="post" action="{% url 'delete_shop' shop.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" data-confirm="Delete this shop?"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon"><i class="fas fa-store"></i></div>
+    <h3>No Shops Found</h3>
+    <p>Create shops to populate the mall.</p>
+    <a href="{% url 'add_shop' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Shop</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Notifications - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-bell"></i> Notifications</h1>
+    <p>Your recent notifications and updates</p>
+</div>
+
+<div class="card">
+    {% if notifications %}
+        {% for notification in notifications %}
+        <a href="{% if notification.link %}{{ notification.link }}{% else %}{% url 'mark_notification_read' notification.pk %}{% endif %}" 
+           class="notification-item {% if not notification.is_read %}unread{% endif %}" style="display:flex;text-decoration:none;">
+            <div class="notification-dot {% if notification.is_read %}read{% endif %}"></div>
+            <div style="flex:1;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.3rem;">
+                    <strong style="font-size:0.9rem;color:var(--text-primary);">{{ notification.title }}</strong>
+                    <span class="badge badge-{{ notification.notification_type }}" style="flex-shrink:0;margin-left:1rem;">
+                        {{ notification.get_notification_type_display }}
+                    </span>
+                </div>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.3rem;">{{ notification.message }}</p>
+                <small style="color:var(--text-muted);">{{ notification.created_at|timesince }} ago</small>
+            </div>
+        </a>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="icon"><i class="fas fa-bell-slash"></i></div>
+            <h3>No Notifications</h3>
+            <p>You're all caught up!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

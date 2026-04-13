@@ -1,0 +1,77 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Shop {{ shop.shop_number }} - Owner Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-store"></i> Shop {{ shop.shop_number }}</h1>
+    <p>{{ shop.floor.floor_name }}</p>
+    <div class="page-header-actions">
+        <a href="{% url 'owner_update_rental' shop.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Edit Rental Details</a>
+        <a href="{% url 'owner_shops' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div>
+        <div class="card">
+            <div class="card-header"><h3>Shop Information</h3></div>
+            <div class="detail-item"><span class="detail-label">Shop Number</span><span class="detail-value">{{ shop.shop_number }}</span></div>
+            <div class="detail-item"><span class="detail-label">Floor</span><span class="detail-value">{{ shop.floor.floor_name }}</span></div>
+            <div class="detail-item"><span class="detail-label">Size</span><span class="detail-value">{{ shop.size }}</span></div>
+            <div class="detail-item"><span class="detail-label">Monthly Rent</span><span class="detail-value" style="color:var(--success);">₹{{ shop.monthly_rent|floatformat:2 }}</span></div>
+            <div class="detail-item"><span class="detail-label">Deposit</span><span class="detail-value">₹{{ shop.deposit_amount|floatformat:2 }}</span></div>
+            <div class="detail-item"><span class="detail-label">Maintenance</span><span class="detail-value">₹{{ shop.maintenance_charge|floatformat:2 }}</span></div>
+            <div class="detail-item"><span class="detail-label">Status</span><span class="detail-value"><span class="badge badge-{{ shop.rental_status|status_badge }}">{{ shop.get_rental_status_display }}</span></span></div>
+            <div class="detail-item"><span class="detail-label">Listing</span><span class="detail-value"><span class="badge badge-{{ shop.listing_type|status_badge }}">{{ shop.get_listing_type_display }}</span></span></div>
+            <div class="detail-item"><span class="detail-label">Lease Duration</span><span class="detail-value">{{ shop.lease_duration|default:"12 months" }}</span></div>
+        </div>
+
+        {% if applications %}
+        <div class="card mt-2">
+            <div class="card-header"><h3>Applications</h3></div>
+            {% for app in applications %}
+            <div class="detail-item">
+                <div>
+                    <strong>{{ app.tenant.get_full_name }}</strong>
+                    <br><small class="text-muted">{{ app.created_at|date:"d M Y" }} · {{ app.business_type|default:"N/A" }}</small>
+                </div>
+                <div>
+                    <span class="badge badge-{{ app.status|status_badge }}">{{ app.get_status_display }}</span>
+                    <a href="{% url 'owner_application_detail' app.pk %}" class="btn btn-secondary btn-sm" style="margin-left:0.5rem;"><i class="fas fa-eye"></i></a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div>
+        {% if active_rental %}
+        <div class="card">
+            <div class="card-header"><h3>Current Tenant</h3></div>
+            <div class="detail-item"><span class="detail-label">Tenant</span><span class="detail-value">{{ active_rental.tenant.get_full_name }}</span></div>
+            <div class="detail-item"><span class="detail-label">Start</span><span class="detail-value">{{ active_rental.start_date|date:"d M Y" }}</span></div>
+            <div class="detail-item"><span class="detail-label">End</span><span class="detail-value">{{ active_rental.end_date|date:"d M Y" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Rent</span><span class="detail-value">₹{{ active_rental.rent_amount|floatformat:0 }}/mo</span></div>
+            <div style="margin-top:1rem;">
+                <a href="{% url 'owner_upload_agreement' active_rental.pk %}" class="btn btn-secondary btn-sm w-full" style="justify-content:center;"><i class="fas fa-upload"></i> Upload Agreement</a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if payments %}
+        <div class="card {% if active_rental %}mt-2{% endif %}">
+            <div class="card-header"><h3>Recent Payments</h3></div>
+            {% for payment in payments|slice:":5" %}
+            <div class="detail-item">
+                <span style="font-weight:600;color:var(--success);">₹{{ payment.amount|floatformat:0 }}</span>
+                <small class="text-muted">{{ payment.paid_at|date:"d M Y" }}</small>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+{% load humanize %}
+
+{% block title %}Tenant Dashboard - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-tachometer-alt"></i> Tenant Dashboard</h1>
+    <p>Welcome, {{ user.get_full_name }}! Manage your rental activities</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon purple"><i class="fas fa-file-alt"></i></div>
+        <div class="stat-info">
+            <h4>{{ total_applications }}</h4>
+            <p>Total Applications</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+            <h4>{{ approved_count }}</h4>
+            <p>Approved</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon teal"><i class="fas fa-handshake"></i></div>
+        <div class="stat-info">
+            <h4>{{ active_rental_count }}</h4>
+            <p>Active Rentals</p>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Payments Alert -->
+{% if pending_payments %}
+<div class="alert alert-info">
+    <i class="fas fa-exclamation-circle"></i>
+    You have {{ pending_payments.count }} application{{ pending_payments.count|pluralize }} awaiting payment.
+    {% for app in pending_payments %}
+        <a href="{% url 'initiate_payment' app.id %}" class="btn btn-primary btn-sm" style="margin-left:0.5rem;">Pay for Shop {{ app.shop.shop_number }}</a>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ─── Next Rent Due (for each active rental) ─────────────── -->
+{% for rental in active_rentals %}
+<div class="card mt-2" style="border-left:4px solid {% if rental.is_rent_overdue %}var(--danger){% elif rental.days_until_next_rent <= 5 %}var(--warning){% else %}var(--success){% endif %};">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <div style="width:56px;height:56px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+                {% if rental.is_rent_overdue %}background:#FEF2F2;color:var(--danger);
+                {% elif rental.days_until_next_rent <= 5 %}background:#FFFBEB;color:var(--warning);
+                {% else %}background:#ECFDF5;color:var(--success);{% endif %}">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div>
+                <h4 style="font-size:1rem;margin-bottom:0.2rem;">
+                    Shop {{ rental.shop.shop_number }} · {{ rental.shop.floor.floor_name }}
+                </h4>
+                <p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:0.2rem;">
+                    Next rent due: <strong style="color:var(--text-primary);">
+                        {% if rental.next_rent_due_date %}{{ rental.next_rent_due_date|date:"d M Y" }}{% else %}—{% endif %}
+                    </strong>
+                </p>
+                <p style="font-size:0.78rem;margin-bottom:0;">
+                    {% if rental.is_rent_overdue %}
+                        <span style="color:var(--danger);font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Rent is overdue!</span>
+                    {% elif rental.days_until_next_rent == 0 %}
+                        <span style="color:var(--warning);font-weight:600;"><i class="fas fa-clock"></i> Rent is due today!</span>
+                    {% elif rental.days_until_next_rent <= 5 %}
+                        <span style="color:var(--warning);font-weight:600;"><i class="fas fa-clock"></i> Due in {{ rental.days_until_next_rent }} day{{ rental.days_until_next_rent|pluralize }}</span>
+                    {% else %}
+                        <span style="color:var(--success);"><i class="fas fa-check-circle"></i> Due in {{ rental.days_until_next_rent }} days</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div style="text-align:right;">
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.2rem;">Monthly Amount</p>
+            <h3 style="color:var(--primary);margin-bottom:0.5rem;">₹{{ rental.total_monthly|floatformat:0|intcomma }}</h3>
+            <a href="{% url 'pay_monthly_rent' rental.pk %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-rupee-sign"></i> Pay Rent
+            </a>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div class="grid-2 mt-2">
+    <!-- Active Rentals -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-handshake"></i> Active Rentals</h3>
+            <a href="{% url 'tenant_rentals' %}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        {% if active_rentals %}
+            {% for rental in active_rentals %}
+            <div class="detail-item">
+                <div>
+                    <strong>Shop {{ rental.shop.shop_number }}</strong>
+                    <br><small class="text-muted">{{ rental.shop.floor.floor_name }} · ₹{{ rental.rent_amount|floatformat:0 }}/mo</small>
+                </div>
+                <div>
+                    <span class="badge badge-success">Active</span>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted text-center" style="padding:1rem;">No active rentals</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Applications -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-file-alt"></i> Applications</h3>
+            <a href="{% url 'tenant_applications' %}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        {% if applications %}
+            {% for app in applications|slice:":5" %}
+            <div class="detail-item">
+                <div>
+                    <strong>Shop {{ app.shop.shop_number }}</strong>
+                    <br><small class="text-muted">{{ app.shop.floor.floor_name }}</small>
+                </div>
+                <span class="badge badge-{{ app.status|status_badge }}">{{ app.get_status_display }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted text-center" style="padding:1rem;">
+                No applications yet. <a href="{% url 'rental_listing' %}">Browse shops</a>
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card mt-3">
+    <div class="card-header"><h3><i class="fas fa-bolt"></i> Quick Actions</h3></div>
+    <div class="btn-group" style="padding:0.5rem 0;">
+        <a href="{% url 'rental_listing' %}" class="btn btn-secondary"><i class="fas fa-search"></i> Browse Shops</a>
+        <a href="{% url 'tenant_applications' %}" class="btn btn-secondary"><i class="fas fa-file-alt"></i> My Applications</a>
+        <a href="{% url 'tenant_payments' %}" class="btn btn-secondary"><i class="fas fa-credit-card"></i> Payment History</a>
+        <a href="{% url 'tenant_invoices' %}" class="btn btn-secondary"><i class="fas fa-file-invoice"></i> Invoices</a>
+    </div>
+</div>
+{% endblock %}

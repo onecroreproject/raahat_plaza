@@ -1,0 +1,99 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+{% load humanize %}
+
+{% block title %}Owner Dashboard - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-tachometer-alt"></i> Owner Dashboard</h1>
+    <p>Manage your shops and rental operations</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon purple"><i class="fas fa-store"></i></div>
+        <div class="stat-info">
+            <h4>{{ total_owned }}</h4>
+            <p>Total Shops</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-door-open"></i></div>
+        <div class="stat-info">
+            <h4>{{ vacant }}</h4>
+            <p>Vacant</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon teal"><i class="fas fa-door-closed"></i></div>
+        <div class="stat-info">
+            <h4>{{ occupied }}</h4>
+            <p>Occupied</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon orange"><i class="fas fa-file-alt"></i></div>
+        <div class="stat-info">
+            <h4>{{ pending_requests }}</h4>
+            <p>Pending Requests</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+        <div class="stat-info">
+            <h4>{{ approved_tenants }}</h4>
+            <p>Active Tenants</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-rupee-sign"></i></div>
+        <div class="stat-info">
+            <h4>₹{{ total_rent|floatformat:0|intcomma }}</h4>
+            <p>Total Rent Collected</p>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Recent Applications -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-file-alt"></i> Recent Applications</h3>
+            <a href="{% url 'owner_applications' %}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        {% if recent_applications %}
+            {% for app in recent_applications %}
+            <div class="detail-item">
+                <div>
+                    <strong>{{ app.tenant.get_full_name }}</strong>
+                    <br><small class="text-muted">Shop {{ app.shop.shop_number }}</small>
+                </div>
+                <span class="badge badge-{{ app.status|status_badge }}">{{ app.get_status_display }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted text-center" style="padding:1rem;">No recent applications</p>
+        {% endif %}
+    </div>
+
+    <!-- My Shops -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-store"></i> My Shops</h3>
+            <a href="{% url 'owner_shops' %}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        {% for shop in owned_shops|slice:":5" %}
+        <div class="detail-item">
+            <div>
+                <strong>Shop {{ shop.shop_number }}</strong>
+                <br><small class="text-muted">{{ shop.floor.floor_name }} · ₹{{ shop.monthly_rent|floatformat:0 }}/mo</small>
+            </div>
+            <span class="badge badge-{{ shop.rental_status|status_badge }}">{{ shop.get_rental_status_display }}</span>
+        </div>
+        {% empty %}
+            <p class="text-muted text-center" style="padding:1rem;">No shops assigned</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

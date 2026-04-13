@@ -1,0 +1,51 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Mall Settings - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-building"></i> Mall Settings</h1>
+    <p>Configure Raahat Plaza details</p>
+</div>
+
+<div class="form-card wide">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <small class="text-danger">{{ field.errors.0 }}</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="save-mall">
+                <i class="fas fa-save"></i> Save Mall Settings
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if floors %}
+<div class="card mt-3" style="max-width:800px;">
+    <div class="card-header">
+        <h3>Floors in {{ mall.name }}</h3>
+        <a href="{% url 'add_floor' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add Floor</a>
+    </div>
+    {% for floor in floors %}
+    <div class="detail-item">
+        <div>
+            <span style="font-weight:600;">{{ floor.floor_name }}</span>
+            <br><small class="text-muted">{{ floor.total_shops }} shops · Order: {{ floor.floor_order }}</small>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'edit_floor' floor.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

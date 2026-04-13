@@ -1,0 +1,127 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Application #{{ application.id }} - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-file-alt"></i> Application #{{ application.id }}</h1>
+    <p>{{ application.tenant.get_full_name }} → Shop {{ application.shop.shop_number }}</p>
+    <div class="page-header-actions">
+        <a href="{% url 'admin_applications' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div>
+        <!-- Application Details -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Application Details</h3>
+                <span class="badge badge-{{ application.status|status_badge }}">{{ application.get_status_display }}</span>
+            </div>
+            <div class="detail-item"><span class="detail-label">Tenant</span><span class="detail-value">{{ application.tenant.get_full_name }}</span></div>
+            <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value">{{ application.tenant.email }}</span></div>
+            <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-value">{{ application.tenant.phone|default:"-" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Shop</span><span class="detail-value">{{ application.shop.shop_number }} ({{ application.shop.floor.floor_name }})</span></div>
+            <div class="detail-item"><span class="detail-label">Business Type</span><span class="detail-value">{{ application.business_type|default:"-" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Lease Duration</span><span class="detail-value">{{ application.lease_duration|default:"-" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Move-in Date</span><span class="detail-value">{{ application.expected_move_in|date:"d M Y"|default:"-" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Submitted</span><span class="detail-value">{{ application.submitted_at|date:"d M Y H:i"|default:"-" }}</span></div>
+            {% if application.message %}
+            <div style="margin-top:1rem;padding:1rem;background:var(--bg-input);border-radius:var(--radius-sm);">
+                <strong style="font-size:0.85rem;">Message:</strong>
+                <p style="margin-top:0.3rem;font-size:0.88rem;">{{ application.message }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Documents -->
+        <div class="card mt-2">
+            <div class="card-header"><h3>Uploaded Documents</h3></div>
+            {% if documents %}
+            <div class="document-list">
+                {% for doc in documents %}
+                <div class="document-item">
+                    <div class="document-icon">
+                        <i class="fas {% if doc.mime_type == 'application/pdf' %}fa-file-pdf{% else %}fa-file-image{% endif %}"></i>
+                    </div>
+                    <div class="document-info">
+                        <div class="document-name">{{ doc.get_document_type_display }}</div>
+                        <div class="document-meta">{{ doc.file_name }} · {{ doc.file_size|filesizeformat }} · {{ doc.uploaded_at|date:"d M Y" }}</div>
+                        {% if doc.remarks %}
+                        <div class="document-meta" style="color:var(--warning);">Remarks: {{ doc.remarks }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="document-actions">
+                        <span class="badge badge-{{ doc.status|status_badge }}">{{ doc.get_status_display }}</span>
+                        <a href="{{ doc.file.url }}" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-download"></i></a>
+                        <a href="{% url 'admin_review_document' doc.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-check-circle"></i></a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center" style="padding:1rem;">No documents uploaded yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Review Panel -->
+    <div>
+        <div class="card">
+            <div class="card-header"><h3>Review Application</h3></div>
+            {% if application.status in 'submitted,under_review,documents_pending' %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="app-review-action">Action</label>
+                    {{ form.action }}
+                </div>
+                <div class="form-group">
+                    <label for="app-review-remarks">Remarks</label>
+                    {{ form.remarks }}
+                </div>
+                <button type="submit" class="btn btn-primary w-full" style="justify-content:center;">
+                    <i class="fas fa-gavel"></i> Submit Review
+                </button>
+            </form>
+            {% else %}
+            <p class="text-muted" style="padding:0.5rem 0;">
+                {% if application.status == 'awaiting_payment' %}
+                    Application approved. Waiting for tenant payment.
+                {% elif application.status == 'active' %}
+                    Rental is active.
+                {% elif application.status == 'rejected' %}
+                    Application was rejected.
+                {% else %}
+                    Status: {{ application.get_status_display }}
+                {% endif %}
+            </p>
+            {% endif %}
+
+            {% if application.admin_remarks %}
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+                <strong style="font-size:0.8rem;color:var(--text-muted);">Admin Remarks:</strong>
+                <p style="font-size:0.88rem;margin-top:0.3rem;">{{ application.admin_remarks }}</p>
+            </div>
+            {% endif %}
+            {% if application.owner_remarks %}
+            <div style="margin-top:0.5rem;">
+                <strong style="font-size:0.8rem;color:var(--text-muted);">Owner Remarks:</strong>
+                <p style="font-size:0.88rem;margin-top:0.3rem;">{{ application.owner_remarks }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Shop Quick Info -->
+        <div class="card mt-2">
+            <div class="card-header"><h3>Shop Info</h3></div>
+            <div class="detail-item"><span class="detail-label">Rent</span><span class="detail-value">₹{{ application.shop.monthly_rent|floatformat:0 }}/mo</span></div>
+            <div class="detail-item"><span class="detail-label">Deposit</span><span class="detail-value">₹{{ application.shop.deposit_amount|floatformat:0 }}</span></div>
+            <div class="detail-item"><span class="detail-label">Maintenance</span><span class="detail-value">₹{{ application.shop.maintenance_charge|floatformat:0 }}</span></div>
+            <div class="detail-item"><span class="detail-label">Size</span><span class="detail-value">{{ application.shop.size }}</span></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

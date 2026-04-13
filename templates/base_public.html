@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block body %}
+<!-- Top Navigation -->
+<nav class="topbar">
+    <a href="{% url 'home' %}" class="topbar-brand">
+        <div class="sidebar-brand-icon">RP</div>
+        <h1>Raahat Plaza</h1>
+    </a>
+    <div class="topbar-nav">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'rental_listing' %}">Available Shops</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-secondary btn-sm">Register</a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="public-page">
+    <!-- Messages -->
+    {% if messages %}
+        <div style="max-width: 1200px; margin: 1rem auto; padding: 0 2rem;">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</div>
+{% endblock %}

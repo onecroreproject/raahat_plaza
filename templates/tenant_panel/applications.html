@@ -1,0 +1,52 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}My Applications - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-file-alt"></i> My Applications</h1>
+    <p>Track all your rental applications</p>
+    <div class="page-header-actions">
+        <a href="{% url 'rental_listing' %}" class="btn btn-primary"><i class="fas fa-search"></i> Browse Shops</a>
+    </div>
+</div>
+
+{% if applications %}
+<div class="table-container">
+    <table>
+        <thead><tr><th>ID</th><th>Shop</th><th>Floor</th><th>Rent</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for app in applications %}
+            <tr>
+                <td>#{{ app.id }}</td>
+                <td><strong>{{ app.shop.shop_number }}</strong></td>
+                <td>{{ app.shop.floor.floor_name }}</td>
+                <td>₹{{ app.shop.monthly_rent|floatformat:0 }}</td>
+                <td><span class="badge badge-{{ app.status|status_badge }}">{{ app.get_status_display }}</span></td>
+                <td>{{ app.submitted_at|date:"d M Y"|default:"-" }}</td>
+                <td>
+                    <div class="btn-group">
+                        <a href="{% url 'tenant_application_detail' app.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-eye"></i></a>
+                        {% if app.can_upload_documents %}
+                        <a href="{% url 'tenant_upload_documents' app.id %}" class="btn btn-primary btn-sm"><i class="fas fa-upload"></i> Docs</a>
+                        {% endif %}
+                        {% if app.can_make_payment %}
+                        <a href="{% url 'initiate_payment' app.id %}" class="btn btn-success btn-sm"><i class="fas fa-rupee-sign"></i> Pay</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon"><i class="fas fa-file-alt"></i></div>
+    <h3>No Applications</h3>
+    <p>You haven't applied for any shops yet.</p>
+    <a href="{% url 'rental_listing' %}" class="btn btn-primary"><i class="fas fa-search"></i> Browse Shops</a>
+</div>
+{% endif %}
+{% endblock %}

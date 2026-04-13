@@ -1,0 +1,91 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Application #{{ application.id }} - Owner Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-file-alt"></i> Application #{{ application.id }}</h1>
+    <p>{{ application.tenant.get_full_name }} → Shop {{ application.shop.shop_number }}</p>
+    <div class="page-header-actions">
+        <a href="{% url 'owner_applications' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <h3>Tenant Details</h3>
+                <span class="badge badge-{{ application.status|status_badge }}">{{ application.get_status_display }}</span>
+            </div>
+            <div class="detail-item"><span class="detail-label">Name</span><span class="detail-value">{{ application.tenant.get_full_name }}</span></div>
+            <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value">{{ application.tenant.email }}</span></div>
+            <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-value">{{ application.tenant.phone|default:"-" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Business</span><span class="detail-value">{{ application.business_type|default:"-" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Lease</span><span class="detail-value">{{ application.lease_duration|default:"-" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Move-in</span><span class="detail-value">{{ application.expected_move_in|date:"d M Y"|default:"-" }}</span></div>
+            {% if application.message %}
+            <div style="margin-top:1rem;padding:1rem;background:var(--bg-input);border-radius:var(--radius-sm);">
+                <strong style="font-size:0.85rem;">Message:</strong>
+                <p style="margin-top:0.3rem;">{{ application.message }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card mt-2">
+            <div class="card-header"><h3>Documents</h3></div>
+            {% if documents %}
+            <div class="document-list">
+                {% for doc in documents %}
+                <div class="document-item">
+                    <div class="document-icon"><i class="fas {% if doc.mime_type == 'application/pdf' %}fa-file-pdf{% else %}fa-file-image{% endif %}"></i></div>
+                    <div class="document-info">
+                        <div class="document-name">{{ doc.get_document_type_display }}</div>
+                        <div class="document-meta">{{ doc.file_name }} · {{ doc.uploaded_at|date:"d M Y" }}</div>
+                    </div>
+                    <div class="document-actions">
+                        <span class="badge badge-{{ doc.status|status_badge }}">{{ doc.get_status_display }}</span>
+                        <a href="{{ doc.file.url }}" target="_blank" class="btn btn-secondary btn-sm"><i class="fas fa-download"></i></a>
+                        <a href="{% url 'owner_review_document' doc.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-check-circle"></i></a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center" style="padding:1rem;">No documents uploaded</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <div class="card">
+            <div class="card-header"><h3>Review</h3></div>
+            {% if application.status in 'submitted,under_review,documents_pending' %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Action</label>
+                    {{ form.action }}
+                </div>
+                <div class="form-group">
+                    <label>Remarks</label>
+                    {{ form.remarks }}
+                </div>
+                <button type="submit" class="btn btn-primary w-full" style="justify-content:center;">
+                    <i class="fas fa-gavel"></i> Submit Review
+                </button>
+            </form>
+            {% else %}
+            <p class="text-muted">Status: {{ application.get_status_display }}</p>
+            {% endif %}
+            {% if application.owner_remarks %}
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+                <strong style="font-size:0.8rem;color:var(--text-muted);">Your Remarks:</strong>
+                <p style="font-size:0.88rem;">{{ application.owner_remarks }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

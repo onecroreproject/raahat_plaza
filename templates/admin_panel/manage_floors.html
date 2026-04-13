@@ -1,0 +1,60 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Manage Floors - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-layer-group"></i> Manage Floors</h1>
+    <p>Create and manage floors in Raahat Plaza</p>
+    <div class="page-header-actions">
+        <a href="{% url 'add_floor' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Floor</a>
+    </div>
+</div>
+
+{% if floors %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Floor Name</th>
+                <th>Total Shops</th>
+                <th>Vacant</th>
+                <th>Occupied</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for floor in floors %}
+            <tr>
+                <td>{{ floor.floor_order }}</td>
+                <td><strong>{{ floor.floor_name }}</strong></td>
+                <td>{{ floor.total_shops }}</td>
+                <td><span class="badge badge-success">{{ floor.vacant_shops }}</span></td>
+                <td><span class="badge badge-info">{{ floor.occupied_shops }}</span></td>
+                <td>{{ floor.description|truncatewords:10|default:"-" }}</td>
+                <td>
+                    <div class="btn-group">
+                        <a href="{% url 'edit_floor' floor.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                        <form method="post" action="{% url 'delete_floor' floor.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" data-confirm="Delete this floor? All shops in this floor will also be deleted."><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon"><i class="fas fa-layer-group"></i></div>
+    <h3>No Floors Yet</h3>
+    <p>Create the first floor for Raahat Plaza to get started.</p>
+    <a href="{% url 'add_floor' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Floor</a>
+</div>
+{% endif %}
+{% endblock %}

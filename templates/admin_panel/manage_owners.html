@@ -1,0 +1,68 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Manage Owners - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-user-tie"></i> Manage Owners</h1>
+    <p>Create and manage shop owner accounts</p>
+    <div class="page-header-actions">
+        <a href="{% url 'add_owner' %}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Owner</a>
+    </div>
+</div>
+
+{% if owners %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Shops</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for owner in owners %}
+            <tr>
+                <td><strong>{{ owner.get_full_name }}</strong></td>
+                <td>{{ owner.username }}</td>
+                <td>{{ owner.email }}</td>
+                <td>{{ owner.phone|default:"-" }}</td>
+                <td><span class="badge badge-info">{{ owner.shop_count }}</span></td>
+                <td>
+                    {% if owner.is_active_account %}
+                        <span class="badge badge-success">Active</span>
+                    {% else %}
+                        <span class="badge badge-danger">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group">
+                        <a href="{% url 'edit_owner' owner.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
+                        <form method="post" action="{% url 'toggle_owner_status' owner.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-{% if owner.is_active_account %}warning{% else %}success{% endif %} btn-sm" data-confirm="{% if owner.is_active_account %}Deactivate{% else %}Activate{% endif %} this owner?">
+                                <i class="fas fa-{% if owner.is_active_account %}ban{% else %}check{% endif %}"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon"><i class="fas fa-user-tie"></i></div>
+    <h3>No Owners Yet</h3>
+    <p>Create owner accounts and assign shops to them.</p>
+    <a href="{% url 'add_owner' %}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Owner</a>
+</div>
+{% endif %}
+{% endblock %}

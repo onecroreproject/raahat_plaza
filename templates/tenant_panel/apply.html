@@ -1,0 +1,46 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Apply for Rent - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-paper-plane"></i> Apply for Rent</h1>
+    <p>Shop {{ shop.shop_number }} · {{ shop.floor.floor_name }}</p>
+</div>
+
+<div class="detail-grid">
+    <div>
+        <div class="form-card" style="max-width:100%;">
+            <h3 style="margin-bottom:1.5rem;">Rental Application Form</h3>
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
+                    {% if field.errors %}<small class="text-danger">{{ field.errors.0 }}</small>{% endif %}
+                </div>
+                {% endfor %}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit Application</button>
+                    <a href="{% url 'shop_detail_public' shop.pk %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        <div class="card" style="position:sticky;top:90px;">
+            <div class="card-header"><h3>Shop Details</h3></div>
+            <div class="detail-item"><span class="detail-label">Shop</span><span class="detail-value">{{ shop.shop_number }}</span></div>
+            <div class="detail-item"><span class="detail-label">Floor</span><span class="detail-value">{{ shop.floor.floor_name }}</span></div>
+            <div class="detail-item"><span class="detail-label">Size</span><span class="detail-value">{{ shop.size }}</span></div>
+            <div class="detail-item"><span class="detail-label">Rent</span><span class="detail-value" style="color:var(--success);">₹{{ shop.monthly_rent|floatformat:0 }}/mo</span></div>
+            <div class="detail-item"><span class="detail-label">Deposit</span><span class="detail-value">₹{{ shop.deposit_amount|floatformat:0 }}</span></div>
+            <div class="detail-item"><span class="detail-label">Maintenance</span><span class="detail-value">₹{{ shop.maintenance_charge|floatformat:0 }}/mo</span></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

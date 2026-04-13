@@ -1,0 +1,89 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Profile - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-user-cog"></i> My Profile</h1>
+    <p>Manage your account information</p>
+</div>
+
+<div class="form-card wide">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" name="first_name" class="form-input" value="{{ user.first_name }}" id="profile-first-name">
+            </div>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" name="last_name" class="form-input" value="{{ user.last_name }}" id="profile-last-name">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" class="form-input" value="{{ user.email }}" id="profile-email">
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="text" name="phone" class="form-input" value="{{ user.phone|default_if_none:'' }}" id="profile-phone">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Address</label>
+            <textarea name="address" class="form-input" rows="3" id="profile-address">{{ user.address|default_if_none:'' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Profile Image</label>
+            <input type="file" name="profile_image" class="form-input" accept="image/*" id="profile-image">
+            {% if user.profile_image %}
+                <small class="text-muted">Current: {{ user.profile_image.name }}</small>
+            {% endif %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="profile-save">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<!-- Account Info -->
+<div class="card mt-3" style="max-width:800px;">
+    <div class="card-header">
+        <h3>Account Information</h3>
+    </div>
+    <div class="card-body">
+        <div class="detail-item">
+            <span class="detail-label">Username</span>
+            <span class="detail-value">{{ user.username }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Role</span>
+            <span class="detail-value"><span class="badge badge-primary">{{ user.get_role_display }}</span></span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Account Status</span>
+            <span class="detail-value">
+                {% if user.is_active_account %}
+                    <span class="badge badge-success">Active</span>
+                {% else %}
+                    <span class="badge badge-danger">Inactive</span>
+                {% endif %}
+            </span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Joined</span>
+            <span class="detail-value">{{ user.date_joined|date:"d M Y" }}</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

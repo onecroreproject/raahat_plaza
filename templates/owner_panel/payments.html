@@ -1,0 +1,43 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+{% load humanize %}
+
+{% block title %}Payments - Owner Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-credit-card"></i> Payment History</h1>
+    <p>View rent and deposit payments for your shops</p>
+</div>
+
+<div class="stat-card" style="max-width:300px;margin-bottom:1.5rem;">
+    <div class="stat-icon green"><i class="fas fa-rupee-sign"></i></div>
+    <div class="stat-info">
+        <h4>₹{{ total|floatformat:0|intcomma }}</h4>
+        <p>Total Received</p>
+    </div>
+</div>
+
+{% if payments %}
+<div class="table-container">
+    <table>
+        <thead><tr><th>ID</th><th>Tenant</th><th>Shop</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+            {% for p in payments %}
+            <tr>
+                <td>#{{ p.id }}</td>
+                <td>{{ p.tenant.get_full_name }}</td>
+                <td>{{ p.shop.shop_number }}</td>
+                <td>{{ p.get_payment_type_display }}</td>
+                <td style="color:var(--success);font-weight:600;">₹{{ p.amount|floatformat:0|intcomma }}</td>
+                <td><span class="badge badge-{{ p.status|status_badge }}">{{ p.get_status_display }}</span></td>
+                <td>{{ p.paid_at|date:"d M Y"|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state"><div class="icon"><i class="fas fa-credit-card"></i></div><h3>No Payments</h3><p>No payments received yet.</p></div>
+{% endif %}
+{% endblock %}

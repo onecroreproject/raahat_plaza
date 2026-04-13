@@ -1,0 +1,66 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Manage Tenants - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-users"></i> Manage Tenants</h1>
+    <p>View and manage tenant accounts</p>
+</div>
+
+{% if tenants %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Applications</th>
+                <th>Active Rentals</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tenant in tenants %}
+            <tr>
+                <td><strong>{{ tenant.get_full_name }}</strong></td>
+                <td>{{ tenant.username }}</td>
+                <td>{{ tenant.email }}</td>
+                <td>{{ tenant.phone|default:"-" }}</td>
+                <td><span class="badge badge-info">{{ tenant.application_count }}</span></td>
+                <td><span class="badge badge-success">{{ tenant.rental_count }}</span></td>
+                <td>
+                    {% if tenant.is_active_account %}
+                        <span class="badge badge-success">Active</span>
+                    {% else %}
+                        <span class="badge badge-danger">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group">
+                        <a href="{% url 'edit_tenant' tenant.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a>
+                        <form method="post" action="{% url 'toggle_tenant_status' tenant.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-{% if tenant.is_active_account %}warning{% else %}success{% endif %} btn-sm">
+                                <i class="fas fa-{% if tenant.is_active_account %}ban{% else %}check{% endif %}"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon"><i class="fas fa-users"></i></div>
+    <h3>No Tenants Yet</h3>
+    <p>Tenants will appear here once they register.</p>
+</div>
+{% endif %}
+{% endblock %}

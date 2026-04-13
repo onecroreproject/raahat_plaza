@@ -1,0 +1,56 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Invoices - Raahat Plaza{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-file-invoice"></i> Invoice Management</h1>
+    <p>View and download all generated invoices</p>
+</div>
+
+{% if invoices %}
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Tenant</th>
+                <th>Shop</th>
+                <th>Floor</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Generated</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td><strong>{{ invoice.invoice_number }}</strong></td>
+                <td>{{ invoice.tenant_name }}</td>
+                <td>{{ invoice.shop_number }}</td>
+                <td>{{ invoice.floor_name }}</td>
+                <td>{{ invoice.payment_type }}</td>
+                <td style="color:var(--success);font-weight:600;">₹{{ invoice.total_amount|floatformat:0 }}</td>
+                <td>{{ invoice.generated_at|date:"d M Y" }}</td>
+                <td>
+                    {% if invoice.pdf_path %}
+                    <a href="{% url 'download_invoice' invoice.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> PDF</a>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon"><i class="fas fa-file-invoice"></i></div>
+    <h3>No Invoices</h3>
+    <p>Invoices will be generated after successful payments.</p>
+</div>
+{% endif %}
+{% endblock %}

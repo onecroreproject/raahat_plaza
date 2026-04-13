@@ -1,0 +1,105 @@
+{% extends 'base_dashboard.html' %}
+{% load custom_filters %}
+
+{% block title %}Application #{{ application.id }} - Tenant Panel{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-file-alt"></i> Application #{{ application.id }}</h1>
+    <p>Shop {{ application.shop.shop_number }} · {{ application.shop.floor.floor_name }}</p>
+    <div class="page-header-actions">
+        <a href="{% url 'tenant_applications' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+        {% if application.can_upload_documents %}
+        <a href="{% url 'tenant_upload_documents' application.id %}" class="btn btn-primary btn-sm"><i class="fas fa-upload"></i> Upload Documents</a>
+        {% endif %}
+        {% if can_pay %}
+        <a href="{% url 'initiate_payment' application.id %}" class="btn btn-success btn-sm pulse-glow"><i class="fas fa-rupee-sign"></i> Make Payment</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div>
+        <!-- Application Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Application Status</h3>
+                <span class="badge badge-{{ application.status|status_badge }}">{{ application.get_status_display }}</span>
+            </div>
+            <div class="detail-item"><span class="detail-label">Shop</span><span class="detail-value">{{ application.shop.shop_number }}</span></div>
+            <div class="detail-item"><span class="detail-label">Floor</span><span class="detail-value">{{ application.shop.floor.floor_name }}</span></div>
+            <div class="detail-item"><span class="detail-label">Business Type</span><span class="detail-value">{{ application.business_type|default:"-" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Lease Duration</span><span class="detail-value">{{ application.lease_duration|default:"-" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Move-in Date</span><span class="detail-value">{{ application.expected_move_in|date:"d M Y"|default:"-" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Submitted</span><span class="detail-value">{{ application.submitted_at|date:"d M Y H:i"|default:"-" }}</span></div>
+            {% if application.admin_remarks %}
+            <div style="margin-top:1rem;padding:1rem;background:rgba(255,170,0,0.08);border:1px solid rgba(255,170,0,0.2);border-radius:var(--radius-sm);">
+                <strong style="font-size:0.8rem;color:var(--warning);">Admin Remarks:</strong>
+                <p style="font-size:0.88rem;margin-top:0.3rem;margin-bottom:0;">{{ application.admin_remarks }}</p>
+            </div>
+            {% endif %}
+            {% if application.owner_remarks %}
+            <div style="margin-top:0.5rem;padding:1rem;background:rgba(52,152,219,0.08);border:1px solid rgba(52,152,219,0.2);border-radius:var(--radius-sm);">
+                <strong style="font-size:0.8rem;color:var(--info);">Owner Remarks:</strong>
+                <p style="font-size:0.88rem;margin-top:0.3rem;margin-bottom:0;">{{ application.owner_remarks }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Documents -->
+        <div class="card mt-2">
+            <div class="card-header">
+                <h3>Your Documents</h3>
+                {% if application.can_upload_documents %}
+                <a href="{% url 'tenant_upload_documents' application.id %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Upload</a>
+                {% endif %}
+            </div>
+            {% if documents %}
+            <div class="document-list">
+                {% for doc in documents %}
+                <div class="document-item">
+                    <div class="document-icon"><i class="fas {% if doc.mime_type == 'application/pdf' %}fa-file-pdf{% else %}fa-file-image{% endif %}"></i></div>
+                    <div class="document-info">
+                        <div class="document-name">{{ doc.get_document_type_display }}</div>
+                        <div class="document-meta">{{ doc.file_name }} · {{ doc.uploaded_at|date:"d M Y" }}</div>
+                        {% if doc.remarks %}<div class="document-meta" style="color:var(--warning);">{{ doc.remarks }}</div>{% endif %}
+                    </div>
+                    <div class="document-actions">
+                        <span class="badge badge-{{ doc.status|status_badge }}">{{ doc.get_status_display }}</span>
+                        {% if doc.status in 'rejected,reupload_required' %}
+                        <a href="{% url 'tenant_upload_documents' application.id %}" class="btn btn-warning btn-sm"><i class="fas fa-redo"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center" style="padding:1rem;">No documents uploaded. <a href="{% url 'tenant_upload_documents' application.id %}">Upload now</a></p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <!-- Payment Info -->
+        <div class="card">
+            <div class="card-header"><h3>Payment Required</h3></div>
+            <div class="payment-item"><span>Monthly Rent</span><span>₹{{ application.shop.monthly_rent|floatformat:0 }}</span></div>
+            <div class="payment-item"><span>Security Deposit</span><span>₹{{ application.shop.deposit_amount|floatformat:0 }}</span></div>
+            <div class="payment-item"><span>Maintenance</span><span>₹{{ application.shop.maintenance_charge|floatformat:0 }}</span></div>
+            <div class="payment-total">
+                <span>Total</span>
+                <span>₹{{ application.shop.monthly_rent|add:application.shop.deposit_amount|add:application.shop.maintenance_charge|floatformat:0 }}</span>
+            </div>
+            {% if can_pay %}
+            <a href="{% url 'initiate_payment' application.id %}" class="btn btn-success btn-lg w-full mt-2 pulse-glow" style="justify-content:center;">
+                <i class="fas fa-rupee-sign"></i> Proceed to Payment
+            </a>
+            {% elif application.status == 'active' %}
+            <p class="text-success text-center mt-2"><i class="fas fa-check-circle"></i> Payment completed</p>
+            {% else %}
+            <p class="text-muted text-center mt-2">Payment will be available after application approval</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
